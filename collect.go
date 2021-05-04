@@ -8,7 +8,7 @@ import (
 // Collect takes error channels and returns a new error channel where all non-nil
 // errors from input error channels are funneled into.
 func Collect(errchans ...<-chan error) <-chan error {
-	return wait(context.TODO(), errchans)
+	return collect(context.TODO(), errchans)
 }
 
 // CollectContext is same as Collect, except it takes a context.
@@ -18,10 +18,10 @@ func Collect(errchans ...<-chan error) <-chan error {
 // resulting error channel will only contain the context error, and not the errors
 // collected by errchans.
 func CollectContext(ctx context.Context, errchans ...<-chan error) <-chan error {
-	return wait(ctx, errchans)
+	return collect(ctx, errchans)
 }
 
-func wait(ctx context.Context, errchans []<-chan error) <-chan error {
+func collect(ctx context.Context, errchans []<-chan error) <-chan error {
 	errs := make(chan error)
 	var wg sync.WaitGroup
 	closeChanEventually := func() {
