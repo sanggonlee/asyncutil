@@ -7,4 +7,4 @@ A collection of utilities for concurrent programming in Go.
 
 ## Documentation
 
-[godoc](https://github.com/sanggonlee/asyncutil)
+[godoc](https://pkg.go.dev/github.com/sanggonlee/asyncutil)
