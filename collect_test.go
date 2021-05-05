@@ -319,7 +319,15 @@ func TestCollectContext_CancelledContextIsPassed(t *testing.T) {
 // Benchmarks.
 ////////////////////////////////////////////////////////////////////////////
 
-func BenchmarkCollect(b *testing.B) {
+func BenchmarkCollect_5_functions_of_50_milliseconds_each(b *testing.B) {
+	var durations = []time.Duration{
+		50 * time.Millisecond,
+		50 * time.Millisecond,
+		50 * time.Millisecond,
+		50 * time.Millisecond,
+		50 * time.Millisecond,
+	}
+
 	for i := 0; i < b.N; i++ {
 		results := make([]<-chan error, 0, len(durations))
 		for _, dur := range durations {
@@ -333,7 +341,93 @@ func BenchmarkCollect(b *testing.B) {
 	}
 }
 
-func BenchmarkSequential(b *testing.B) {
+func BenchmarkSequential_5_functions_of_50_milliseconds_each(b *testing.B) {
+	var durations = []time.Duration{
+		50 * time.Millisecond,
+		50 * time.Millisecond,
+		50 * time.Millisecond,
+		50 * time.Millisecond,
+		50 * time.Millisecond,
+	}
+
+	for i := 0; i < b.N; i++ {
+		for _, dur := range durations {
+			for err := range work(dur) {
+				if err != nil {
+					b.Fatal(err.Error())
+				}
+			}
+		}
+	}
+}
+
+func BenchmarkCollect_2_functions_of_30_milliseconds_each(b *testing.B) {
+	var durations = []time.Duration{
+		30 * time.Millisecond,
+		30 * time.Millisecond,
+	}
+
+	for i := 0; i < b.N; i++ {
+		results := make([]<-chan error, 0, len(durations))
+		for _, dur := range durations {
+			results = append(results, work(dur))
+		}
+		for err := range asyncutil.Collect(results...) {
+			if err != nil {
+				b.Fatal(err.Error())
+			}
+		}
+	}
+}
+
+func BenchmarkSequential_2_functions_of_30_milliseconds_each(b *testing.B) {
+	var durations = []time.Duration{
+		30 * time.Millisecond,
+		30 * time.Millisecond,
+	}
+
+	for i := 0; i < b.N; i++ {
+		for _, dur := range durations {
+			for err := range work(dur) {
+				if err != nil {
+					b.Fatal(err.Error())
+				}
+			}
+		}
+	}
+}
+
+func BenchmarkCollect_5_functions_of_200_milliseconds_each(b *testing.B) {
+	var durations = []time.Duration{
+		200 * time.Millisecond,
+		200 * time.Millisecond,
+		200 * time.Millisecond,
+		200 * time.Millisecond,
+		200 * time.Millisecond,
+	}
+
+	for i := 0; i < b.N; i++ {
+		results := make([]<-chan error, 0, len(durations))
+		for _, dur := range durations {
+			results = append(results, work(dur))
+		}
+		for err := range asyncutil.Collect(results...) {
+			if err != nil {
+				b.Fatal(err.Error())
+			}
+		}
+	}
+}
+
+func BenchmarkSequential_5_functions_of_200_milliseconds_each(b *testing.B) {
+	var durations = []time.Duration{
+		200 * time.Millisecond,
+		200 * time.Millisecond,
+		200 * time.Millisecond,
+		200 * time.Millisecond,
+		200 * time.Millisecond,
+	}
+
 	for i := 0; i < b.N; i++ {
 		for _, dur := range durations {
 			for err := range work(dur) {
@@ -353,12 +447,4 @@ func work(dur time.Duration) chan error {
 		errch <- nil
 	}()
 	return errch
-}
-
-var durations = []time.Duration{
-	50 * time.Millisecond,
-	50 * time.Millisecond,
-	50 * time.Millisecond,
-	50 * time.Millisecond,
-	50 * time.Millisecond,
 }
